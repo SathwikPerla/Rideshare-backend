@@ -10,6 +10,7 @@ import com.sathwikperla.demo.repository.UserRepository;
 import com.sathwikperla.demo.util.SecurityUtil;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -33,6 +34,7 @@ public class RideService {
 
     public Ride createRide(CreateRideRequest request) {
         User user = getCurrentUser();
+
         if (!"ROLE_USER".equals(user.getRole())) {
             throw new BadRequestException("Only users can request rides");
         }
@@ -41,9 +43,19 @@ public class RideService {
         ride.setUserId(user.getId());
         ride.setPickupLocation(request.getPickupLocation());
         ride.setDropLocation(request.getDropLocation());
-        ride.setStatus("REQUESTED");
-        ride.setCreatedAt(new Date());
 
+        // ✅ REQUIRED FIELDS (Step 2)
+        ride.setCreatedDate(LocalDate.now());
+        ride.setCreatedAt(new Date());
+        ride.setStatus("REQUESTED");
+
+        // ✅ Temporary fallback so queries don’t break
+        if (ride.getDistanceKm() == null) {
+            ride.setDistanceKm(5.0);
+        }
+        if (ride.getFare() == null) {
+            ride.setFare(100.0);
+        }
         return rideRepository.save(ride);
     }
 
@@ -54,14 +66,17 @@ public class RideService {
 
     public List<Ride> getPendingRidesForDriver() {
         User driver = getCurrentUser();
+
         if (!"ROLE_DRIVER".equals(driver.getRole())) {
             throw new BadRequestException("Only drivers can view pending rides");
         }
+
         return rideRepository.findByStatus("REQUESTED");
     }
 
     public Ride acceptRide(String rideId) {
         User driver = getCurrentUser();
+
         if (!"ROLE_DRIVER".equals(driver.getRole())) {
             throw new BadRequestException("Only drivers can accept rides");
         }
@@ -79,7 +94,7 @@ public class RideService {
     }
 
     public Ride completeRide(String rideId) {
-        User current = getCurrentUser(); // we don’t enforce check here strictly
+        User current = getCurrentUser(); // optional ownership checks later
 
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new NotFoundException("Ride not found"));
