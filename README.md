@@ -9,6 +9,7 @@ The system supports two user roles: 👤 USER (Passenger) who can request rides 
 Java 17+, Spring Boot, Spring Security, MongoDB, JWT (JSON Web Token), Maven, Jakarta Validation.
 
 ## 📂 Project Structure
+```
 src  
 └── main  
   └── java  
@@ -43,7 +44,9 @@ src
           ├── util  
           │   ├── JwtUtil.java  
           │   └── SecurityUtil.java  
-          └── DemoApplication.java  
+          └── DemoApplication.java
+```
+      
 
 ## 👥 User Roles
 ROLE_USER can request rides and view their own rides. ROLE_DRIVER can view pending ride requests, accept rides, and complete rides.
